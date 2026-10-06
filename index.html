@@ -7,12 +7,14 @@
 
 <style>
 *{box-sizing:border-box}
+
 body{
   margin:0;
   font-family:Arial,sans-serif;
   background:#0d1117;
   color:#f0f6fc;
 }
+
 header{
   padding:18px;
   border-bottom:1px solid #30363d;
@@ -20,31 +22,55 @@ header{
   justify-content:space-between;
   align-items:center;
 }
-.logo{font-size:22px;font-weight:bold}
+
+.logo{
+  font-size:22px;
+  font-weight:bold;
+}
+
 .badge{
   background:#238636;
   padding:7px 12px;
   border-radius:20px;
   font-size:12px;
 }
-main{padding:20px;max-width:900px;margin:auto}
+
+main{
+  padding:20px;
+  max-width:900px;
+  margin:auto;
+}
+
 .hero{
   padding:25px 0;
 }
-h1{font-size:32px;margin-bottom:10px}
-p{color:#8b949e}
+
+h1{
+  font-size:32px;
+  margin-bottom:10px;
+}
+
+p{
+  color:#8b949e;
+}
+
 .cards{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
   gap:14px;
 }
+
 .card{
   background:#161b22;
   border:1px solid #30363d;
   border-radius:12px;
   padding:18px;
 }
-.card h3{margin-top:0}
+
+.card h3{
+  margin-top:0;
+}
+
 button{
   background:#238636;
   color:white;
@@ -53,6 +79,11 @@ button{
   border-radius:8px;
   cursor:pointer;
 }
+
+button:disabled{
+  opacity:.6;
+}
+
 .ai{
   margin-top:25px;
   background:#161b22;
@@ -60,34 +91,45 @@ button{
   border-radius:14px;
   overflow:hidden;
 }
+
 .ai-title{
   padding:15px;
   border-bottom:1px solid #30363d;
   font-weight:bold;
 }
+
 .chat{
   padding:15px;
   min-height:180px;
-  max-height:300px;
+  max-height:350px;
   overflow:auto;
 }
+
 .msg{
   padding:10px 12px;
   margin:8px 0;
   border-radius:10px;
   max-width:90%;
+  white-space:pre-wrap;
+  line-height:1.45;
 }
-.bot{background:#21262d}
+
+.bot{
+  background:#21262d;
+}
+
 .user{
   background:#238636;
   margin-left:auto;
 }
+
 .input{
   display:flex;
   gap:8px;
   padding:12px;
   border-top:1px solid #30363d;
 }
+
 input{
   flex:1;
   background:#0d1117;
@@ -95,7 +137,9 @@ input{
   border:1px solid #30363d;
   border-radius:8px;
   padding:12px;
+  outline:none;
 }
+
 footer{
   text-align:center;
   padding:30px;
@@ -108,16 +152,18 @@ footer{
 
 <header>
   <div class="logo">⚡ UNKNOWN CodeHub</div>
-  <div class="badge">WORKING V1</div>
+  <div class="badge">AI ONLINE</div>
 </header>
 
 <main>
 
 <section class="hero">
   <h1>Build. Code. Share.</h1>
+
   <p>
-    A community coding platform with an AI guide to help you learn and build.
+    A community coding platform with a real AI guide to help you learn and build.
   </p>
+
   <button onclick="welcome()">Start Building 🚀</button>
 </section>
 
@@ -140,7 +186,7 @@ footer{
 
 <div class="card">
 <h3>🤖 AI Guide</h3>
-<p>Get help while learning and coding.</p>
+<p>Get real AI help while learning and coding.</p>
 </div>
 
 </section>
@@ -153,14 +199,19 @@ footer{
 
 <div class="chat" id="chat">
 <div class="msg bot">
-Hi! 👋 I'm your CodeHub AI Guide.<br><br>
-Ask me about coding, repositories, HTML, CSS, JavaScript or CodeHub.
+Hi! 👋 I'm UNKNOWN CodeHub AI.
+
+Ask me about HTML, CSS, JavaScript, Python, Git, GitHub, debugging or web development.
 </div>
 </div>
 
 <div class="input">
-<input id="question" placeholder="Ask AI anything..." onkeydown="enterKey(event)">
-<button onclick="askAI()">Ask</button>
+<input
+  id="question"
+  placeholder="Ask AI anything..."
+  onkeydown="enterKey(event)"
+>
+<button id="askButton" onclick="askAI()">Ask</button>
 </div>
 
 </section>
@@ -173,57 +224,133 @@ UNKNOWN CodeHub © 2026
 
 <script>
 
+const AI_API =
+"https://unknown-codehub-ai.usachannelf.workers.dev/chat";
+
 function addMessage(text,type){
+
   const chat=document.getElementById("chat");
+
   const div=document.createElement("div");
+
   div.className="msg "+type;
-  div.innerHTML=text;
+
+  div.textContent=text;
+
   chat.appendChild(div);
+
   chat.scrollTop=chat.scrollHeight;
 }
 
-function askAI(){
+async function askAI(){
 
   const input=document.getElementById("question");
+  const button=document.getElementById("askButton");
+
   const q=input.value.trim();
 
   if(!q)return;
 
   addMessage(q,"user");
+
   input.value="";
 
-  let answer=
-  "I'm still learning 🤖. Try asking me about HTML, CSS, JavaScript, repositories or how to build a website.";
+  button.disabled=true;
+  button.textContent="Thinking...";
 
-  const x=q.toLowerCase();
+  const thinking=document.createElement("div");
+  thinking.className="msg bot";
+  thinking.textContent="🤖 Thinking...";
+  thinking.id="thinking";
 
-  if(x.includes("html"))
-    answer="HTML creates the structure of a webpage. Start with &lt;html&gt;, &lt;head&gt; and &lt;body&gt;.";
+  document.getElementById("chat").appendChild(thinking);
 
-  else if(x.includes("css"))
-    answer="CSS controls how your website looks — colors, spacing, fonts, buttons and layouts.";
+  try{
 
-  else if(x.includes("javascript") || x.includes("js"))
-    answer="JavaScript makes websites interactive. For example, buttons and this AI chat use JavaScript.";
+    const response=await fetch(AI_API,{
 
-  else if(x.includes("repository") || x.includes("repo"))
-    answer="A repository is a project space where your code and files are stored.";
+      method:"POST",
 
-  else if(x.includes("codehub"))
-    answer="UNKNOWN CodeHub is our community coding platform. Next we can add real accounts, repositories, file editing and a real AI backend.";
+      headers:{
+        "Content-Type":"application/json"
+      },
 
-  setTimeout(()=>{
-    addMessage(answer,"bot");
-  },400);
+      body:JSON.stringify({
+        message:q
+      })
+
+    });
+
+    const data=await response.json();
+
+    const oldThinking=document.getElementById("thinking");
+
+    if(oldThinking){
+      oldThinking.remove();
+    }
+
+    if(!response.ok){
+
+      addMessage(
+        "⚠️ AI error: "+
+        (data.error || "Something went wrong."),
+        "bot"
+      );
+
+      return;
+    }
+
+    if(data.answer){
+
+      addMessage(data.answer,"bot");
+
+    }else{
+
+      addMessage(
+        "⚠️ AI returned no answer.",
+        "bot"
+      );
+
+    }
+
+  }catch(error){
+
+    const oldThinking=document.getElementById("thinking");
+
+    if(oldThinking){
+      oldThinking.remove();
+    }
+
+    addMessage(
+      "⚠️ AI connection failed. Please try again.",
+      "bot"
+    );
+
+  }finally{
+
+    button.disabled=false;
+    button.textContent="Ask";
+
+  }
 }
 
 function enterKey(event){
-  if(event.key==="Enter") askAI();
+
+  if(event.key==="Enter"){
+    askAI();
+  }
+
 }
 
 function welcome(){
+
   document.getElementById("question").focus();
-  addMessage("Great! 🚀 What do you want to build?","bot");
+
+  addMessage(
+    "Great! 🚀 What do you want to build?",
+    "bot"
+  );
+
 }
 
 </script>
